@@ -1,5 +1,5 @@
 <template>
-  <div class="login_container">
+  <div class="container">
     <div class="navbar">
       <p>江苏大学OnlineJudge</p>
       <a @click="toHome">首页</a>
@@ -83,6 +83,7 @@ export default {
       if (result.code !== 0) return this.$message.error(result.msg)
       this.$message.success('注册成功，将为您自动登录…')
       window.sessionStorage.setItem('username', this.registerForm.name)
+      window.sessionStorage.setItem('userId', result.id)
       this.$router.push('/home')
     },
     toHome() {
@@ -129,34 +130,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.navbar {
-  background-color: #333;
-  overflow: hidden;
-}
-
-.navbar a {
-  float: left;
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 17px 16px;
-  text-decoration: none;
-  border-bottom: 3px solid transparent;
-  transition: border-bottom 0.3s ease;
-  cursor: pointer;
-}
-.navbar p {
-  float: left;
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 0px 20px;
-  text-decoration: none;
-  border-bottom: 3px solid transparent;
-}
-.navbar a:hover {
-  border-bottom: 3px solid #ddd;
-}
 .login_box {
   width: 500px;
   height: 450px;

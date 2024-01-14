@@ -1,5 +1,5 @@
 <template>
-  <div class="problemset_container">
+  <div class="container">
     <div class="navbar">
       <p>江苏大学OnlineJudge</p>
       <a @click="toHome">首页</a>
@@ -12,10 +12,7 @@
           {{user}}<i class="el-icon-arrow-down el-icon--right"></i>
         </span>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item @click.native="toUser">个人主页</el-dropdown-item>
-          <el-dropdown-item>设置</el-dropdown-item>
-          <el-dropdown-item @click.native="logout"
-                            divided>登出</el-dropdown-item>
+          <el-dropdown-item @click.native="logout">登出</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -86,22 +83,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.navbar {
-  background-color: #333;
-  overflow: hidden;
-}
-
-.navbar a {
-  float: left;
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 17px 16px;
-  text-decoration: none;
-  border-bottom: 3px solid transparent;
-  transition: border-bottom 0.3s ease;
-  cursor: pointer;
-}
 .el-dropdown-link {
   font-size: 15px;
   display: block;
@@ -112,17 +93,5 @@ export default {
   border-bottom: 3px solid transparent;
   transition: border-bottom 0.3s ease;
   cursor: pointer;
-}
-.navbar p {
-  float: left;
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 0px 20px;
-  text-decoration: none;
-  border-bottom: 3px solid transparent;
-}
-.navbar a:hover {
-  border-bottom: 3px solid #ddd;
 }
 </style>

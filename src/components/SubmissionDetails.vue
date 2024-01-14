@@ -23,29 +23,44 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+
     <transition name="el-zoom-in-bottom">
       <div v-show="show"
-           class="problem_box">
-        <div class="box_title">问题列表</div>
+           class="status_box">
+        <div class="box_title">提交状态</div>
         <el-table :data="currentPageData"
                   style="width: 100%"
                   class="problem_table">
-          <el-table-column label="id"
+          <el-table-column label="时间"
                            header-align="center"
-                           prop="index"
-                           width="100">
+                           prop="submitDate"
+                           width="200">
             <template slot-scope="scope">
-              <div class="centered-text">{{ scope.row.idx }}</div>
+              <div class="centered-text">{{ scope.row.submitDate }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="题目"
-                           width="1200">
+          <el-table-column label="题目id"
+                           header-align="center"
+                           width="200">
             <template slot-scope="scope">
-              <!-- 使用 @click 事件调用自定义方法 -->
-              <span @click="checkProblem(scope.row.idx)"
+              <span @click="checkProblem(scope.row.probID)"
                     class="ProblemName">
-                {{ scope.row.name }}
+                {{ scope.row.probID }}
               </span>
+            </template>
+          </el-table-column>
+          <el-table-column label="作者"
+                           header-align="center"
+                           width="300">
+            <template slot-scope="scope">
+              <div class="centered-text">{{ scope.row.userName }}</div>
+            </template>
+          </el-table-column>
+          <el-table-column label="评测结果"
+                           header-align="center"
+                           width="500">
+            <template slot-scope="scope">
+              <div class="centered-text">{{ scope.row.status }}</div>
             </template>
           </el-table-column>
         </el-table>
@@ -65,13 +80,11 @@
 <script>
 export default {
   mounted() {
-    this.getProblemList()
+    this.checkToken()
+    this.getStatus()
     setTimeout(() => {
       this.show = true
     }, 100)
-  },
-  created() {
-    this.checkToken()
   },
   data() {
     return {
@@ -96,22 +109,43 @@ export default {
       const end = start + this.pageSize
       this.currentPageData = this.tableData.slice(start, end)
     },
-    checkProblem(num) {
-      const problemId = this.tableData.at(num - 1).id
-      this.$router.push('/problemset/' + problemId)
+    async getStatus() {
+      if (this.checkToken() === false) return this.$message.error('请先登录')
+      const queryParams = this.$route.query
+      const ifParams = !!queryParams.userID
+      if (ifParams) {
+        const { data: result } = await this.$http.get('oj/record?' + 'userID=' + queryParams.userID + '&probID=' + queryParams.probID)
+        this.tableData = result
+        console.log(result)
+      } else {
+        const { data: probs } = await this.$http.get('prob/all')
+        console.log(probs)
+        for (let i = 0; i < probs.length; i++) {
+          console.log(probs[i].id)
+          const { data: result } = await this.$http.get('oj/record?' + 'userID=' + sessionStorage.userId + '&probID=' + probs[i].id)
+          const ifsubmit = !!result
+          if (ifsubmit) { this.tableData = this.tableData.concat(result) }
+        }
+        this.tableData.sort((a, b) => {
+          const dateA = new Date(a.submitDate)
+          const dateB = new Date(b.submitDate)
+          return dateB - dateA
+        })
+      }
+      this.handleSizeChange(8)
     },
-    async getProblemList() {
-      const { data: result } = await this.$http.get('prob/all')
-      this.tableData = result
-      this.tableData.forEach((item, index) => {
-        item.idx = index + 1
-      })
-      this.handleCurrentChange(1)
+    checkProblem(num) {
+      this.$router.push('/problemset/' + num)
     },
     checkToken() {
       const token = sessionStorage.getItem('username')
       this.hasToken = !!token
-      if (this.hasToken) this.user = token
+      if (this.hasToken) {
+        this.user = token
+        return true
+      } else {
+        return false
+      }
     },
     toHome() {
       if (this.$route.path !== '/home') {
@@ -149,6 +183,7 @@ export default {
       }
     },
     logout() {
+      console.log('dengchu')
       window.sessionStorage.clear()
       this.$router.go(0)
     }
@@ -157,7 +192,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.problem_box {
+.status_box {
   width: 1300px;
   height: 600px;
   background-color: #fff;
@@ -176,9 +211,11 @@ export default {
   height: 100%; /* 使高度充满整个单元格 */
 }
 .ProblemName {
+  display: flex;
+  align-items: center; /* 在垂直方向上居中 */
+  justify-content: center; /* 在水平方向上居中 */
+  height: 100%; /* 使高度充满整个单元格 */
   cursor: pointer;
-}
-.ProblemName:hover {
   color: #2d8cf0;
 }
 </style>

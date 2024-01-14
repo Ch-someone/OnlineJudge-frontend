@@ -1,5 +1,5 @@
 <template>
-  <div class="login_container">
+  <div class="container">
     <div class="navbar">
       <p>江苏大学OnlineJudge</p>
       <a @click="toHome">首页</a>
@@ -70,6 +70,7 @@ export default {
       if (result.code !== 0) return this.$message.error(result.msg)
       this.$message.success('登录成功')
       window.sessionStorage.setItem('username', this.loginForm.name)
+      window.sessionStorage.setItem('userId', result.id)
       this.$router.push('/home')
     },
     toHome() {
