@@ -26,21 +26,19 @@
     <transition name="el-zoom-in-top">
       <div v-show="show"
            class="problem_box">
-        <div class="box_title">结果解释</div>
-        <p class="problem_text">编译失败 : 无法编译您的源代码，点击链接查看编译器的输出。</p>
-        <p class="problem_text">答案正确 : 你的解题方法是正确的。</p>
-        <p class="problem_text">答案错误 : 你的程序输出结果与判题程序的答案不符。</p>
-        <p class="problem_text">运行时错误 : 您的程序异常终止，可能的原因是：段错误，被零除或用非0的代码退出程序。</p>
-        <p class="problem_text">运行超时 : 您的程序使用的 CPU 时间已超出限制。</p>
+        <div class="box_title">代码</div>
+        <div v-html="renderedMarkdown"> </div>
         <div style="height:30px"></div>
       </div>
     </transition>
   </div>
 </template>
 <script>
+import { marked } from 'marked'
 export default {
   mounted() {
     this.checkToken()
+    this.getCode()
     setTimeout(() => {
       this.show = true
     }, 100)
@@ -49,10 +47,14 @@ export default {
     return {
       hasToken: false,
       show: false,
-      user: ''
+      user: '',
+      code: ''
     }
   },
   methods: {
+    getCode() {
+      this.code = sessionStorage.getItem(this.$route.params.codeIdx)
+    },
     checkToken() {
       const token = sessionStorage.getItem('username')
       this.hasToken = !!token
@@ -94,9 +96,16 @@ export default {
       }
     },
     logout() {
-      console.log('dengchu')
       window.sessionStorage.clear()
       this.$router.go(0)
+    }
+  },
+  computed: {
+    renderedMarkdown() {
+      // 使用 marked 处理 Markdown 文本
+      // console.log(this.code)
+      console.log(marked('```Cpp\n' + this.code + '```'))
+      return marked('```Cpp\n' + this.code + '```')
     }
   }
 }

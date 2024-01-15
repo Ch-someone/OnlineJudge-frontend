@@ -60,7 +60,11 @@
                            header-align="center"
                            width="500">
             <template slot-scope="scope">
-              <div class="centered-text">{{ scope.row.status }}</div>
+              <!-- 使用 @click 事件调用自定义方法 -->
+              <span @click="checkCode(scope.row.submitDate)"
+                    class="ProblemName">
+                {{ scope.row.status }}
+              </span>
             </template>
           </el-table-column>
         </el-table>
@@ -98,6 +102,13 @@ export default {
     }
   },
   methods: {
+    time2String(timeStamp) {
+      return new Date(timeStamp).getTime().toString()
+    },
+    checkCode(timeStamp) {
+      timeStamp = this.time2String(timeStamp)
+      window.open(this.$router.resolve({ path: '/code/' + timeStamp }).href, '_blank')
+    },
     handleSizeChange(val) {
       this.pageSize = val
       this.handleCurrentChange(1)
@@ -116,7 +127,15 @@ export default {
       if (ifParams) {
         const { data: result } = await this.$http.get('oj/record?' + 'userID=' + queryParams.userID + '&probID=' + queryParams.probID)
         this.tableData = result
-        console.log(result)
+        this.tableData.sort((a, b) => {
+          const dateA = new Date(a.submitDate)
+          const dateB = new Date(b.submitDate)
+          return dateB - dateA
+        })
+        for (let i = 0; i < this.tableData.length; i++) {
+          const timeStamp = this.time2String(this.tableData[i].submitDate)
+          sessionStorage.setItem(timeStamp, this.tableData[i].userCode)
+        }
       } else {
         const { data: probs } = await this.$http.get('prob/all')
         console.log(probs)
@@ -125,6 +144,10 @@ export default {
           const { data: result } = await this.$http.get('oj/record?' + 'userID=' + sessionStorage.userId + '&probID=' + probs[i].id)
           const ifsubmit = !!result
           if (ifsubmit) { this.tableData = this.tableData.concat(result) }
+        }
+        for (let i = 0; i < this.tableData.length; i++) {
+          const timeStamp = this.time2String(this.tableData[i].submitDate)
+          sessionStorage.setItem(timeStamp, this.tableData[i].userCode)
         }
         this.tableData.sort((a, b) => {
           const dateA = new Date(a.submitDate)

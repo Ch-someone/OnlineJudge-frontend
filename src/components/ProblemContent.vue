@@ -29,7 +29,8 @@
         <div class="box_title">{{problem.name}}</div>
 
         <h2>题目描述</h2>
-        <p class="problem_text">{{problem.description}}</p>
+        <div class="md"
+             v-html="renderedMarkdown"> </div>
 
         <h2>样例输入</h2>
         <p class="problem_text">{{problem.sampleInput}}</p>
@@ -55,8 +56,7 @@
         <vue-monaco-editor v-model="code"
                            theme="vs-dark"
                            language="cpp"
-                           :options="MONACO_EDITOR_OPTIONS"
-                           @mount="handleMount" />
+                           @change="saveCode" />
         <el-button @click="submit"
                    type="warning"
                    style="margin-top:10px"
@@ -72,13 +72,16 @@
   </div>
 </template>
 <script>
+import { marked } from 'marked'
 export default {
   mounted() {
-    this.checkToken()
-    this.getProblem()
     setTimeout(() => {
       this.show = true
     }, 100)
+  },
+  created() {
+    this.checkToken()
+    this.getProblem()
   },
   data() {
     return {
@@ -89,9 +92,9 @@ export default {
       ken: false,
       user: '',
       show: false,
-      value: '',
+      value: '选项1',
       value2: '',
-      code: '//Give your code here',
+      code: '#include<bits/stdc++.h>\nusing namespace std;\nint main(){\n    //Give your code here\n    return 0;\n}',
       judgeResult: '评测结果',
       problem: {
         description: '',
@@ -103,6 +106,13 @@ export default {
     }
   },
   methods: {
+    getCode() {
+      const latestCode = sessionStorage.getItem('latest' + this.problem.id.toString())
+      if (latestCode) { this.code = latestCode }
+    },
+    saveCode() {
+      sessionStorage.setItem('latest' + this.problem.id.toString(), this.code)
+    },
     async submit() {
       if (this.checkToken() === false) return this.$message.error('请先登录')
       const submission = { problemId: this.problem.id, userId: sessionStorage.getItem('userId'), code: this.code }
@@ -114,6 +124,7 @@ export default {
     async getProblem() {
       const { data: result } = await this.$http.get('prob/id/' + this.$route.params.problemId)
       this.problem = result.problem
+      this.getCode()
     },
     checkStatus() {
       const oneQuery = { userID: sessionStorage.getItem('userId'), probID: this.problem.id }
@@ -169,6 +180,15 @@ export default {
       console.log('dengchu')
       window.sessionStorage.clear()
       this.$router.go(0)
+    }
+  },
+  computed: {
+    renderedMarkdown() {
+      // 使用 marked 处理 Markdown 文本
+
+      this.problem.description.replace(/\n/g, '<br/>')
+      console.log(this.problem.description)
+      return marked.parse(this.problem.description.replace(/\n/g, '<br/>'))
     }
   }
 }
@@ -232,6 +252,9 @@ h3 {
 .problem_text {
   line-height: 20px;
   margin-bottom: 10px;
+  margin-left: 40px;
+}
+.md {
   margin-left: 40px;
 }
 </style>

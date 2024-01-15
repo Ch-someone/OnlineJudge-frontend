@@ -8,6 +8,7 @@ import HomePage from '../components/HomePage.vue'
 import UserPage from '../components/UserPage.vue'
 import SubmissionDetails from '../components/SubmissionDetails.vue'
 import AboutPage from '../components/AboutPage.vue'
+import CodePage from '../components/CodePage.vue'
 
 Vue.use(VueRouter)
 
@@ -19,6 +20,10 @@ const routes = [
   {
     path: '/status',
     component: SubmissionDetails
+  },
+  {
+    path: '/code/:codeIdx',
+    component: CodePage
   },
   { path: '/', redirect: '/problemset' },
   { path: '/login', component: LoginDemo },
